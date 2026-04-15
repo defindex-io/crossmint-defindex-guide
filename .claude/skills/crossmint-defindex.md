@@ -1,8 +1,6 @@
 ---
 name: crossmint-defindex
-description: Integration playbook for Crossmint smart wallets + Sodax bridge + Defindex vaults on Stellar
-triggers:
-  - /crossmint-defindex
+description: End-to-end playbook for integrating Defindex vaults on Stellar using Crossmint smart wallets and Sodax bridge. Covers EVM wallet (ERC-4337), Stellar wallet, Soroban contract-call deposit/withdraw/withdraw-shares, and full Base→Stellar bridge. Use when building Crossmint + Defindex integrations or answering questions about the Crossmint/Sodax/Stellar/Defindex stack.
 ---
 
 # Crossmint + Sodax + Defindex Integration Playbook

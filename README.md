@@ -105,11 +105,24 @@ XLM vault (testnet):          CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS
 
 ## Claude Skill
 
-In any Claude Code session within this repository, invoke the integration playbook with:
+The `.claude/skills/crossmint-defindex.md` file is a Claude Code skill — an LLM-optimized
+integration playbook. Invoke it with `/crossmint-defindex` in any Claude Code session.
 
-```
-/crossmint-defindex
+**Install globally** (available in any project, not just this repo):
+
+```bash
+# Option 1 — install script (run from repo root)
+bash install-skill.sh
+
+# Option 2 — one-liner (from anywhere)
+mkdir -p ~/.claude/skills && curl -fsSL \
+  https://raw.githubusercontent.com/defindex-io/crossmint-defindex-guide/main/.claude/skills/crossmint-defindex.md \
+  -o ~/.claude/skills/crossmint-defindex.md
 ```
 
-The skill covers the complete integration in a format optimized for LLM consumption,
-including all critical signing patterns, gotchas, and code snippets.
+**Install project-local** (only within this repo):
+
+The skill is already in `.claude/skills/` — no setup needed. Just open the repo in Claude Code.
+
+After installation, use `/crossmint-defindex` in any Claude Code session to load the full
+integration playbook: signing patterns, gotchas, step-by-step code, and file map.
