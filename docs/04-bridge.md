@@ -110,9 +110,6 @@ const intentState = await sodax.swaps.getFilledIntent(fillTxHash);
 const amountReceived = intentState.receivedOutput;  // actual settled stroops
 ```
 
-**No Horizon polling needed.** Unlike the Privy flow, Crossmint abstracts Stellar
-transaction delivery. After SOLVED, the Stellar wallet already has the USDC.
-
 ---
 
 ## Full Code

@@ -152,9 +152,6 @@ export async function depositToDefindexVault(
 /**
  * Withdraws a specific underlying amount from a Defindex vault.
  *
- * NOTE: The contract-call args (`amounts_to_withdraw`, `from`) are inferred from
- * the Defindex API naming. Verify with the Defindex team before production use.
- *
  * @param amountStroops - Amount to withdraw in stroops (7 decimals)
  */
 export async function withdrawFromDefindexVault(
@@ -180,9 +177,6 @@ export async function withdrawFromDefindexVault(
 
 /**
  * Redeems a specific number of vault shares from a Defindex vault.
- *
- * NOTE: The contract-call args (`shares_amount`, `from`) are inferred from
- * the Defindex API naming. Verify with the Defindex team before production use.
  *
  * @param shares - Number of shares to redeem in stroops (7 decimals)
  */

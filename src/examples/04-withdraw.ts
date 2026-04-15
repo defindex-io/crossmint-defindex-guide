@@ -4,9 +4,6 @@
  * Withdraws a specific underlying amount from the testnet Defindex XLM vault
  * using a Crossmint Stellar smart wallet.
  *
- * NOTE: The withdraw contract-call args are inferred from Defindex API naming.
- * Verify with the Defindex team before production use.
- *
  * Prerequisites:
  *   - CROSSMINT_ENV=staging
  *   - Stellar wallet has an active position in the vault (run 03-deposit first)

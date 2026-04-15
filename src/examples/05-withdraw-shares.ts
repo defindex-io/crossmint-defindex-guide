@@ -4,9 +4,6 @@
  * Fetches the current vault share balance for the Stellar wallet, then redeems
  * a configurable percentage of shares from the testnet Defindex XLM vault.
  *
- * NOTE: The withdraw_shares contract-call args are inferred from Defindex API naming.
- * Verify with the Defindex team before production use.
- *
  * Prerequisites:
  *   - CROSSMINT_ENV=staging
  *   - Stellar wallet has vault shares (run 03-deposit first)

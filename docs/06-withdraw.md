@@ -3,10 +3,6 @@
 Withdraw a specific underlying amount from a Defindex vault using a Soroban `contract-call`
 via the Crossmint REST API.
 
-> **Note:** The contract-call method name (`withdraw`) and args (`amounts_to_withdraw`, `from`)
-> are inferred from the Defindex API/SDK naming. Verify with the Defindex team before
-> production use.
-
 ---
 
 ## Transaction Body

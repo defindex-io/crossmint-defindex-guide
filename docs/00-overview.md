@@ -49,21 +49,6 @@ and the full Base→Stellar bridge flow.
        ▼
 [Vault shares issued to Stellar wallet]
 ```
-
----
-
-## Key Differences from Privy
-
-| Aspect | Crossmint | Privy |
-|---|---|---|
-| EVM wallet type | Smart wallet (ERC-4337) | EOA (TEE) |
-| Auth primitive | `EVM_PRIVATE_KEY` as adminSigner | P-256 Authorization Key |
-| Stellar deposit | `contract-call` via Crossmint REST | Manual XDR build + `rawSign` + Horizon POST |
-| Horizon polling | Not needed | Required before Defindex deposit |
-| XLM funding | Auto on wallet creation | Manual |
-| EVM approval msg | Raw hex bytes (`ethers.getBytes()`) | N/A |
-| Stellar approval msg | Base64 XDR (`Buffer.from(msg, "base64")`) | N/A |
-
 ---
 
 ## Chain and Token Reference

@@ -26,10 +26,6 @@ Crossmint Stellar Smart Wallet
 Defindex Vault (Soroban)
 ```
 
-**Key difference from Privy:**
-- Crossmint = ERC-4337 smart wallet + Soroban contract-call (no manual XDR, no Horizon poll)
-- Privy = TEE EOA + manual XDR build + rawSign + Horizon broadcast
-
 ## Prerequisites
 
 ```bash
@@ -151,7 +147,7 @@ const txHash = await withdrawFromDefindexVault(
 );
 ```
 
-**Contract args (inferred — verify with Defindex team):**
+**Contract args:**
 ```json
 { "amounts_to_withdraw": ["5000000"], "from": "G..." }
 ```
@@ -167,7 +163,7 @@ const txHash = await withdrawSharesFromDefindexVault(
 );
 ```
 
-**Contract args (inferred — verify with Defindex team):**
+**Contract args:**
 ```json
 { "shares_amount": "5000000", "from": "G..." }
 ```
@@ -189,9 +185,8 @@ const { amountReceived } = await bridgeService.pollStatus(statusHash);
 
 1. **EVM signing:** `ethers.getBytes(message)` — never `signMessage(message)` (double-hash)
 2. **Stellar signing:** `Buffer.from(message, "base64")` — never `ethers.getBytes()` (wrong encoding + wrong algorithm)
-3. **No Horizon polling:** unlike Privy, deposit immediately after `pollStatus()` returns
-4. **adminSigner at creation:** can't add `external-wallet` signer post-creation without email OTP
-5. **sk_ API key required:** `ck_` keys don't have wallet transaction signing permissions
+3. **adminSigner at creation:** can't add `external-wallet` signer post-creation without email OTP
+4. **sk_ API key required:** `ck_` keys don't have wallet transaction signing permissions
 
 ## File Map
 

@@ -3,10 +3,6 @@
 Redeem a specific number of vault shares from a Defindex vault using a Soroban `contract-call`
 via the Crossmint REST API. Shares represent a proportional claim on the vault's assets.
 
-> **Note:** The contract-call method name (`withdraw_shares`) and args (`shares_amount`, `from`)
-> are inferred from the Defindex API/SDK naming. Verify with the Defindex team before
-> production use.
-
 ---
 
 ## Getting Share Balance
