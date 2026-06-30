@@ -90,12 +90,42 @@ No Horizon polling required — Crossmint returns the confirmed Stellar tx hash 
 
 ---
 
-## Testnet
+## Network selection (staging vs production)
 
-For testnet, use the XLM vault:
+The deposit example is network-aware and driven by `CROSSMINT_ENV`:
+
+| `CROSSMINT_ENV` | Stellar network | Vault | Deposit asset |
+|---|---|---|---|
+| `staging` | testnet | `CCLV4H7…` (XLM vault) | native XLM |
+| `production` | mainnet | `CA2FIPJ…` (Soroswap EARN USDC) | USDC |
+
+All of this resolves from `config.stellar` (`src/shared/config.ts`) — network,
+passphrase, Soroban RPC URL, vault, and deposit asset — so the example never
+hardcodes a network. Override the Soroban RPC endpoint with
+`STELLAR_SOROBAN_RPC_URL` if needed.
+
+---
+
+## Pre-deposit balance gate
+
+Before any transaction is created, the example reads the wallet's balance of the
+deposit asset and aborts (exit 1) if it is below the deposit amount.
+
 ```ts
-const VAULT = "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6";
-await depositToDefindexVault(restClient, stellarAddress, VAULT, 1_000_000n);
+import { getStellarDepositBalance } from "../wallets/crossmint-stellar-wallet.js";
+
+const balance = await getStellarDepositBalance(stellarAddress); // stroops
+if (balance < amountStroops) {
+  // print required vs available + wallet address, then process.exit(1)
+}
 ```
 
-Run: `pnpm example:deposit`
+> Crossmint Stellar smart wallets are **Soroban contract wallets (C-addresses)**,
+> so their token balance is **not** on Horizon. `getStellarDepositBalance`
+> simulates the asset's SAC `balance(C-address)` call over Soroban RPC and returns
+> stroops (`0n` if the wallet holds none). See `docs/08-gotchas.md`.
+
+---
+
+Run: `pnpm example:deposit` (staging by default; set `CROSSMINT_ENV=production`
+for a mainnet USDC deposit).
