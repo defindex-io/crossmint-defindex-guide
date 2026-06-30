@@ -35,6 +35,7 @@ CROSSMINT_ENV=production                     # or "staging"
 EVM_PRIVATE_KEY=0x...                        # adminSigner for EVM wallet
 STELLAR_SERVER_KEY=S...                      # adminSigner for Stellar wallet
 BASE_RPC_URL=https://mainnet.base.org
+STELLAR_SOROBAN_RPC_URL=                      # optional override for balance reads
 ```
 
 ## Key Constants
@@ -72,8 +73,14 @@ const { address, locator } = await restClient.getOrCreateEvmWallet();
 
 ```ts
 const stellarAddress = await restClient.getStellarWalletAddress();
-// Returns G-address. XLM auto-funded by Crossmint on first creation.
+// Returns a Soroban contract C-address (NOT a classic G-address) — the wallet is
+// a smart-contract wallet; STELLAR_SERVER_KEY is only its adminSigner.
+// XLM auto-funded by Crossmint on first creation.
 ```
+
+**Network selection:** `CROSSMINT_ENV` drives `config.stellar` —
+`staging`→testnet (XLM vault), `production`→mainnet (USDC vault). Network,
+passphrase, Soroban RPC URL, vault, and deposit asset all resolve from there.
 
 ## Step 3 — EVM Transaction Flow
 
@@ -118,6 +125,13 @@ const signature = keypair.sign(messageBytes).toString("base64");
 
 ```ts
 import { depositToDefindexVault } from "./src/wallets/crossmint-defindex-wallet.js";
+import { getStellarDepositBalance } from "./src/wallets/crossmint-stellar-wallet.js";
+
+// Gate: the wallet is a C-address, so its token balance is NOT on Horizon.
+// getStellarDepositBalance simulates the deposit asset's SAC balance(addr) over
+// Soroban RPC and returns stroops (0n if none). Abort before creating any tx.
+const balance = await getStellarDepositBalance(stellarAddress);
+if (balance < amountStroops) throw new Error("Insufficient balance");
 
 const txHash = await depositToDefindexVault(
   restClient,

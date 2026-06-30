@@ -152,3 +152,20 @@ const amountReceived = intentState.receivedOutput;  // actual stroops
 
 **Fix:** Use a server API key (`sk_production_...` or `sk_staging_...`).
 Generate it at Dashboard → API Keys → New Key → Server key.
+
+---
+
+## G10 — Stellar wallet balance is not on Horizon
+
+**Symptom:** Querying Horizon `/accounts/{walletAddress}` for the Crossmint
+Stellar wallet returns `404` or shows no USDC, even though the wallet is funded.
+
+**Root cause:** Crossmint Stellar smart wallets are **Soroban contract wallets
+(C-addresses)**, not classic ed25519 G-addresses. `getStellarWalletAddress()`
+returns the contract address; `STELLAR_SERVER_KEY` is only the adminSigner.
+Horizon does not index contract token balances.
+
+**Fix:** Read the balance from the token's SAC contract over Soroban RPC. The
+pre-deposit gate uses `getStellarDepositBalance()`
+(`src/wallets/crossmint-stellar-wallet.ts`), which simulates the asset's
+`balance(C-address)` call and returns stroops (`0n` if the wallet holds none).

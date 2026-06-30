@@ -13,6 +13,15 @@ export const SOROSWAP_EARN_USDC_VAULT =
 export const XLM_DEFINDEX_VAULT_TESTNET =
   "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6";
 
+// Native XLM Stellar Asset Contract (SAC) — deterministic per network.
+const XLM_SAC_TESTNET =
+  "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
+// Mainnet USDC SAC (CCW67…) is reused from the sodax block below.
+
+const STELLAR_PASSPHRASE_TESTNET = "Test SDF Network ; September 2015";
+const STELLAR_PASSPHRASE_MAINNET =
+  "Public Global Stellar Network ; September 2015";
+
 export const config = {
   apiKey: process.env.CROSSMINT_SERVER_API_KEY ?? "",
   baseUrl: isStaging
@@ -42,6 +51,34 @@ export const config = {
   bridge: {
     amount: process.env.BRIDGE_AMOUNT ?? "0.1",
     usdcDecimals: 6,
+  },
+
+  // Stellar network selection — driven by CROSSMINT_ENV (staging → testnet,
+  // production → mainnet). The deposit example reads everything from here.
+  stellar: {
+    network: (isStaging ? "testnet" : "mainnet") as "testnet" | "mainnet",
+    networkPassphrase: isStaging
+      ? STELLAR_PASSPHRASE_TESTNET
+      : STELLAR_PASSPHRASE_MAINNET,
+    sorobanRpcUrl:
+      process.env.STELLAR_SOROBAN_RPC_URL ??
+      (isStaging
+        ? "https://soroban-testnet.stellar.org"
+        : "https://mainnet.sorobanrpc.com"),
+    // Defindex vault to deposit into for the active network.
+    depositVault: isStaging
+      ? XLM_DEFINDEX_VAULT_TESTNET
+      : SOROSWAP_EARN_USDC_VAULT,
+    // Asset the vault accepts: native XLM on testnet, USDC on mainnet.
+    // `contract` is the SAC contract whose `balance(addr)` the gate reads.
+    // Decimals are NOT stored here — read from the token's `decimals()` at runtime
+    // via getStellarTokenDecimals(), since they are a property of the token.
+    depositAsset: isStaging
+      ? { symbol: "XLM", contract: XLM_SAC_TESTNET }
+      : {
+          symbol: "USDC",
+          contract: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
+        },
   },
 
   defindexApiUrl: process.env.DEFINDEX_API_URL ?? "https://api.defindex.io",
