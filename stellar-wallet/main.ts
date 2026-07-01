@@ -1,3 +1,5 @@
+import { createInterface } from "node:readline/promises";
+import { stdin, stdout } from "node:process";
 import { config } from "./lib/shared/config.js";
 import { CrossmintRestClient } from "./lib/shared/crossmint-rest.js";
 import {
@@ -45,11 +47,12 @@ async function main() {
   await printBalances(address);
   console.log("");
 
-  // [3] Transfer step.
+  // [3] Transfer step. Recipient comes from STELLAR_TRANSFER_TO, or is prompted
+  // interactively (blank input skips the transfer).
   console.log("[3] Transfer");
-  const to = config.transfer.to;
+  const to = config.transfer.to || (await promptRecipient());
   if (!to) {
-    console.log("  STELLAR_TRANSFER_TO not set — transfer skipped.\n");
+    console.log("  No recipient — transfer skipped.\n");
     console.log("Done.");
     return;
   }
@@ -86,6 +89,28 @@ async function main() {
   await printBalances(address);
   console.log("");
   console.log("Done.");
+}
+
+/**
+ * Prompts for the transfer recipient when STELLAR_TRANSFER_TO is unset. Returns
+ * a trimmed address, or "" to skip (blank input, or non-interactive stdin).
+ */
+async function promptRecipient(): Promise<string> {
+  if (!stdin.isTTY) return "";
+
+  const rl = createInterface({ input: stdin, output: stdout });
+  try {
+    while (true) {
+      const answer = (
+        await rl.question("  Recipient address (blank to skip): ")
+      ).trim();
+      if (!answer) return "";
+      if (/^[GC][A-Z2-7]{55}$/.test(answer)) return answer;
+      console.log("  Not a valid Stellar G-/C-address — try again.");
+    }
+  } finally {
+    rl.close();
+  }
 }
 
 async function printBalances(address: string): Promise<void> {

@@ -29,8 +29,9 @@ Consequences:
 
 Creating and inspecting the wallet move no funds, so either environment is safe.
 The transfer step is the only fund-moving action: on mainnet it is **gated** on a
-sufficient-balance check (underfunded ⇒ skipped cleanly), and it is **skipped
-entirely** when `STELLAR_TRANSFER_TO` is unset.
+sufficient-balance check (underfunded ⇒ skipped cleanly). The recipient comes from
+`STELLAR_TRANSFER_TO`, or — if that's unset — you're **prompted for it at runtime**
+(blank input skips the transfer).
 
 ## Prerequisites
 
@@ -50,7 +51,7 @@ Set these in the repo-root `.env` (see `.env.example`):
 | `CROSSMINT_ENV` | `staging` (testnet) or `production` (mainnet) |
 | `STELLAR_SERVER_KEY` | Stellar ed25519 secret — the wallet's admin signer |
 | `STELLAR_SOROBAN_RPC_URL` | Optional Soroban RPC override (defaults per network) |
-| `STELLAR_TRANSFER_TO` | Recipient address; unset ⇒ transfer skipped |
+| `STELLAR_TRANSFER_TO` | Recipient address; unset ⇒ prompted at runtime (blank skips) |
 | `STELLAR_TRANSFER_AMOUNT` | Amount in human units, e.g. `0.1` |
 
 ## Run
@@ -65,9 +66,9 @@ pnpm stellar-wallet
    the wallet **C-address**, and the admin-signer **G-address**. Run it twice: the
    second run reuses the same address and creates nothing (idempotent).
 2. `[2]` Balances — XLM (and USDC on mainnet), read over Soroban RPC.
-3. `[3]` Transfer — skipped if `STELLAR_TRANSFER_TO` is unset; otherwise sends the
-   network asset (mainnet gated on balance), prints the on-chain tx hash, and
-   re-prints balances.
+3. `[3]` Transfer — prompts for a recipient if `STELLAR_TRANSFER_TO` is unset
+   (blank skips); otherwise sends the network asset (mainnet gated on balance),
+   prints the on-chain tx hash, and re-prints balances.
 
 No secrets are ever logged — only the C-address, admin-signer public key,
 balances, and tx hashes.
