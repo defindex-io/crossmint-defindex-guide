@@ -19,3 +19,15 @@ are all unchecked (`[ ]`). Completed work is marked `[x]`.
 ## Phase 1 — Stellar mainnet deposit
 
 - [x] Support deposit for Stellar mainnet
+
+## Phase 2 — Full-capability showcase folder
+
+- [x] Self-contained folder demonstrating the complete flow: EVM → SODAX → Defindex on Stellar
+
+## Phase 3 — Crossmint Stellar wallet folder
+
+- [ ] Self-contained folder for creating and using a Crossmint wallet on Stellar (wallet only, nothing else)
+
+## Phase 4 — Stellar wallet Defindex deposit folder
+
+- [ ] Self-contained folder where a Crossmint Stellar wallet deposits into Defindex
