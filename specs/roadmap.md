@@ -26,7 +26,7 @@ are all unchecked (`[ ]`). Completed work is marked `[x]`.
 
 ## Phase 3 — Crossmint Stellar wallet folder
 
-- [ ] Self-contained folder for creating and using a Crossmint wallet on Stellar (wallet only, nothing else)
+- [x] Self-contained folder for creating and using a Crossmint wallet on Stellar (create, inspect balances, transfer USDC on mainnet / XLM on testnet)
 
 ## Phase 4 — One-page integration guide
 
