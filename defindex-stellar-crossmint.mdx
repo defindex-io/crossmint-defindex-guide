@@ -1,0 +1,345 @@
+---
+title: "Open a DeFi Position on Stellar with DeFindex"
+description: "Learn how to create a Crossmint wallet, fund it, and manage DeFi vault positions on Stellar using the DeFindex API."
+---
+
+<CardGroup cols={2}>
+  <Card title="Before you start" icon="rocket" href="https://docs.crossmint.com/introduction/platform/api-keys">
+    Set up your Crossmint project and get an API key.
+  </Card>
+  <Card title="Full Working Example" icon="github" href="https://github.com/paltalabs/crossmint-poc">
+    See the complete proof-of-concept repository.
+  </Card>
+</CardGroup>
+
+## Overview
+
+[DeFindex](https://defindex.io) is a DeFi vault protocol built on [Stellar](https://stellar.org) using [Soroban](https://soroban.stellar.org) smart contracts. Vaults aggregate user deposits and deploy them into yield-generating strategies, abstracting away the complexity of managing individual DeFi positions.
+
+In this guide you will:
+
+1. Fund a Crossmint wallet with test tokens (staging).
+2. **Check vault APY** to see the current yield.
+3. **Open a position** by depositing into a DeFindex vault.
+4. **Check position status** by querying your vault balance.
+5. **Close the position** by withdrawing from the vault.
+
+## Prerequisites
+
+- A [Crossmint API key](https://docs.crossmint.com/introduction/platform/api-keys).
+- A [DeFindex API key](https://api.defindex.io/login) for vault interactions.
+- [Node.js](https://nodejs.org) 21+ installed.
+- Complete the [Crossmint React Quickstart](https://docs.crossmint.com/wallets/quickstarts/react) to set up providers and wallet creation on Stellar with an email signer.
+- A DeFindex vault contract address. This guide uses `CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6`, an XLM vault on testnet.
+
+<Info>
+  When following the React Quickstart, configure the wallet provider for Stellar with an email signer:
+
+  ```tsx
+  <CrossmintWalletProvider
+    createOnLogin={{
+      chain: "stellar",
+      signer: { type: "email" },
+    }}
+  >
+  ```
+</Info>
+
+<Info>
+  This guide uses the **Stellar testnet** and the Crossmint **staging** environment. When moving to production, replace the staging API base URL and use real token addresses.
+</Info>
+
+## Install dependencies
+
+```bash
+npm install @crossmint/client-sdk-react-ui @stellar/stellar-sdk
+```
+
+<Steps>
+  <Step title="Fund the wallet with XLM">
+    This vault operates with **XLM** (Stellar's native token), so the wallet needs an XLM balance before depositing.
+
+    On **testnet**, you can use the Stellar Friendbot to fund any account with 10,000 test XLM:
+
+    <Tabs>
+      <Tab title="TypeScript">
+        ```typescript
+        async function fundWallet(walletAddress: string) {
+          const response = await fetch(
+            `https://friendbot.stellar.org?addr=${walletAddress}`
+          );
+
+          return response.json();
+        }
+
+        // Usage
+        const result = await fundWallet("YOUR_WALLET_ADDRESS");
+        console.log("Funded:", result);
+        ```
+      </Tab>
+      <Tab title="cURL">
+        ```bash
+        curl "https://friendbot.stellar.org?addr=YOUR_WALLET_ADDRESS"
+        ```
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      Friendbot is only available on **testnet**. In production, users must already hold the vault's underlying asset (e.g., XLM) in their wallet before depositing.
+    </Warning>
+  </Step>
+
+  <Step title="Check vault APY">
+    Before depositing, you can query the vault's current APY to understand the expected yield. The APY is a 7-day annualized yield percentage.
+
+    <Tabs>
+      <Tab title="TypeScript">
+        ```typescript
+        const DEFINDEX_API_KEY = "YOUR_DEFINDEX_API_KEY";
+        const DEFINDEX_VAULT = "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6";
+
+        async function getVaultApy(vaultAddress: string) {
+          const response = await fetch(
+            `https://api.defindex.io/vault/${vaultAddress}/apy?network=testnet`,
+            {
+              headers: {
+                Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+              },
+            }
+          );
+
+          return response.json();
+        }
+
+        // Usage
+        const { apy } = await getVaultApy(DEFINDEX_VAULT);
+        console.log(`Current vault APY: ${apy}%`);
+        // Example output: "Current vault APY: 19.4%"
+        ```
+      </Tab>
+      <Tab title="cURL">
+        ```bash
+        curl "https://api.defindex.io/vault/CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6/apy?network=testnet" \
+          -H "Authorization: Bearer YOUR_DEFINDEX_API_KEY"
+        ```
+
+        Example response:
+
+        ```json
+        { "apy": 19.4 }
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Open a position (deposit)">
+    To open a DeFi position, build a deposit transaction via the DeFindex API, sign it with the Crossmint wallet, and submit it.
+
+    The deposit endpoint accepts:
+    - `amounts` — the amount of each asset to deposit (array of numbers).
+    - `caller` — the depositor's Stellar address.
+    - `invest` — deploy funds into strategies immediately (default: `true`).
+    - `slippageBps` — slippage tolerance in basis points (0–10000).
+
+    <Tabs>
+      <Tab title="TypeScript">
+        ```typescript
+        import { StellarWallet, useWallet } from "@crossmint/client-sdk-react-ui";
+
+        const DEFINDEX_API_KEY = "YOUR_DEFINDEX_API_KEY";
+        const DEFINDEX_VAULT = "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6";
+
+        async function deposit(wallet: ReturnType<typeof useWallet>["wallet"]) {
+          if (!wallet) throw new Error("Wallet not connected");
+
+          // 1. Build the transaction via DeFindex API
+          const buildResponse = await fetch(
+            `https://api.defindex.io/vault/${DEFINDEX_VAULT}/deposit`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                amounts: [10000000],
+                caller: wallet.address,
+                invest: true,
+                slippageBps: 100,
+              }),
+            }
+          );
+
+          const { unsignedXdr } = await buildResponse.json();
+
+          // 2. Sign with Crossmint wallet
+          const stellarWallet = StellarWallet.from(wallet);
+          const { signedXdr } = await stellarWallet.signTransaction(unsignedXdr);
+
+          // 3. Submit the signed transaction
+          const submitResponse = await fetch("https://api.defindex.io/send", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ signedXdr }),
+          });
+
+          const result = await submitResponse.json();
+          console.log("Deposit tx:", result);
+          return result;
+        }
+        ```
+      </Tab>
+      <Tab title="cURL">
+        Build the deposit transaction:
+
+        ```bash
+        curl -X POST \
+          "https://api.defindex.io/vault/CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6/deposit" \
+          -H "Authorization: Bearer YOUR_DEFINDEX_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "amounts": [10000000],
+            "caller": "YOUR_WALLET_ADDRESS",
+            "invest": true,
+            "slippageBps": 100
+          }'
+        ```
+
+        This returns an unsigned XDR that must be signed by the wallet and submitted via `POST /send`.
+      </Tab>
+    </Tabs>
+
+    <Note>
+      The `amounts` array must match the number of assets the vault manages. If the vault holds a single asset, pass a single-element array. For multi-asset vaults, provide one value per asset in the vault's asset order. Values are expressed in the smallest unit of the asset (e.g., stroops for XLM, where `10000000` = 1 XLM).
+    </Note>
+  </Step>
+
+  <Step title="Check position status">
+    After depositing, you can query your vault balance to see the current value of your position.
+
+    <Tabs>
+      <Tab title="TypeScript">
+        ```typescript
+        async function getBalance(vaultAddress: string, walletAddress: string) {
+          const response = await fetch(
+            `https://api.defindex.io/vault/${vaultAddress}/balance?from=${walletAddress}&network=testnet`, {
+              headers: {
+                Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+              },
+            }
+          );
+
+          return response.json();
+        }
+
+        // Usage
+        const balance = await getBalance(DEFINDEX_VAULT, wallet.address);
+        console.log("Position balance:", balance);
+        ```
+      </Tab>
+      <Tab title="cURL">
+        ```bash
+        curl "https://api.defindex.io/vault/CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6/balance?from=YOUR_WALLET_ADDRESS&network=testnet"
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Close the position (withdraw)">
+    To close a position and retrieve the underlying assets, build a withdraw transaction via the DeFindex API, sign it, and submit it.
+
+    The withdraw endpoint accepts:
+    - `amounts` — the amounts of each asset to withdraw.
+    - `caller` — the address initiating the withdrawal.
+    - `slippageBps` — slippage tolerance in basis points (0–10000).
+
+    <Tabs>
+      <Tab title="TypeScript">
+        ```typescript
+        async function withdraw(wallet: ReturnType<typeof useWallet>["wallet"]) {
+          if (!wallet) throw new Error("Wallet not connected");
+
+          // 1. Build the withdraw transaction
+          const buildResponse = await fetch(
+            `https://api.defindex.io/vault/${DEFINDEX_VAULT}/withdraw`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                amounts: [10000000],
+                caller: wallet.address,
+                slippageBps: 100,
+              }),
+            }
+          );
+
+          const { unsignedXdr } = await buildResponse.json();
+
+          // 2. Sign with Crossmint wallet
+          const stellarWallet = StellarWallet.from(wallet);
+          const { signedXdr } = await stellarWallet.signTransaction(unsignedXdr);
+
+          // 3. Submit the signed transaction
+          const submitResponse = await fetch("https://api.defindex.io/send", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${DEFINDEX_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ signedXdr }),
+          });
+
+          const result = await submitResponse.json();
+          console.log("Withdraw tx:", result);
+          return result;
+        }
+        ```
+      </Tab>
+      <Tab title="cURL">
+        Build the withdraw transaction:
+
+        ```bash
+        curl -X POST \
+          "https://api.defindex.io/vault/CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6/withdraw" \
+          -H "Authorization: Bearer YOUR_DEFINDEX_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "amounts": [10000000],
+            "caller": "YOUR_WALLET_ADDRESS",
+            "slippageBps": 100
+          }'
+        ```
+
+        This returns an unsigned XDR that must be signed by the wallet and submitted via `POST /send`.
+      </Tab>
+    </Tabs>
+
+    <Warning>
+      Always set a reasonable `slippageBps` value in production. Using `0` disables slippage protection and may result in unfavorable execution during volatile conditions.
+    </Warning>
+
+    <Info>
+      You can also use `POST /vault/{address}/withdraw-shares` to burn a specific number of vault shares instead of specifying asset amounts.
+    </Info>
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Crossmint Wallets" icon="wallet" href="https://docs.crossmint.com/wallets/quickstart">
+    Learn more about creating and managing Crossmint wallets across chains.
+  </Card>
+  <Card title="DeFindex Documentation" icon="book" href="https://docs.defindex.io">
+    Explore the full DeFindex protocol documentation, vault strategies, and SDK reference.
+  </Card>
+  <Card title="Proof of Concept" icon="github" href="https://github.com/paltalabs/crossmint-poc">
+    Browse the complete working example that this guide is based on.
+  </Card>
+</CardGroup>

@@ -1,0 +1,46 @@
+// Copied verbatim from src/shared/bridge-types.ts for the self-contained Phase 2 showcase.
+// Source of truth lives in src/shared/bridge-types.ts — keep in sync if that changes.
+import { Address, Hash } from "@sodax/types";
+
+export interface BridgeToken {
+  symbol: string;
+  address: string;
+  decimals: number;
+  chainId: string | number;
+}
+
+export interface BridgeQuote {
+  amountIn: bigint;
+  amountOut: bigint;
+  fee: bigint;
+  estimatedTime?: number;
+  rawQuote: any;
+}
+
+export interface SwapParams {
+  srcToken: BridgeToken;
+  dstToken: BridgeToken;
+  amountIn: bigint;
+  dstAddress: string;
+  slippageBps?: number; // 100 bps = 1%
+}
+
+export interface BridgeExecutionResult {
+  srcTxHash: Hash | string;
+  statusHash: string;
+}
+
+export interface BridgePollResult {
+  destTxHash: string;
+  amountReceived: bigint; // Stellar stroops
+}
+
+export interface IBridgeService {
+  getQuote(params: SwapParams): Promise<BridgeQuote>;
+  executeSwap(
+    signer: any,
+    params: SwapParams,
+    quote: BridgeQuote
+  ): Promise<BridgeExecutionResult>;
+  pollStatus(statusHash: string): Promise<BridgePollResult>;
+}

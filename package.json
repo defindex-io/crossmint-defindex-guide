@@ -9,7 +9,8 @@
     "example:deposit": "tsx src/examples/03-deposit.ts",
     "example:withdraw": "tsx src/examples/04-withdraw.ts",
     "example:withdraw-shares": "tsx src/examples/05-withdraw-shares.ts",
-    "example:bridge": "tsx src/examples/06-full-bridge.ts"
+    "example:bridge": "tsx src/examples/06-full-bridge.ts",
+    "showcase": "tsx showcase/main.ts"
   },
   "dependencies": {
     "@sodax/sdk": "1.2.7-beta",
