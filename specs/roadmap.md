@@ -28,6 +28,10 @@ are all unchecked (`[ ]`). Completed work is marked `[x]`.
 
 - [ ] Self-contained folder for creating and using a Crossmint wallet on Stellar (wallet only, nothing else)
 
-## Phase 4 — Stellar wallet Defindex deposit folder
+## Phase 4 — One-page integration guide
 
-- [ ] Self-contained folder where a Crossmint Stellar wallet deposits into Defindex
+- [ ] Single-page guide teaching how to integrate Defindex using a Crossmint Stellar wallet
+
+## Phase 5 — Guide implementation (accuracy test)
+
+- [ ] Self-contained folder implementing the Phase 4 guide from a Crossmint Stellar wallet, validating the guide is accurate
