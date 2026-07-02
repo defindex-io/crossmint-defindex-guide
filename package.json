@@ -10,7 +10,8 @@
     "example:withdraw": "tsx src/examples/04-withdraw.ts",
     "example:withdraw-shares": "tsx src/examples/05-withdraw-shares.ts",
     "example:bridge": "tsx src/examples/06-full-bridge.ts",
-    "showcase": "tsx showcase/main.ts"
+    "showcase": "tsx showcase/main.ts",
+    "stellar-wallet": "tsx stellar-wallet/main.ts"
   },
   "dependencies": {
     "@sodax/sdk": "1.2.7-beta",

@@ -26,7 +26,7 @@ are all unchecked (`[ ]`). Completed work is marked `[x]`.
 
 ## Phase 3 — Crossmint Stellar wallet folder
 
-- [ ] Self-contained folder for creating and using a Crossmint wallet on Stellar (wallet only, nothing else)
+- [x] Self-contained folder for creating and using a Crossmint wallet on Stellar (create, inspect balances, transfer USDC on mainnet / XLM on testnet)
 
 ## Phase 4 — One-page integration guide
 
@@ -35,3 +35,20 @@ are all unchecked (`[ ]`). Completed work is marked `[x]`.
 ## Phase 5 — Guide implementation (accuracy test)
 
 - [ ] Self-contained folder implementing the Phase 4 guide from a Crossmint Stellar wallet, validating the guide is accurate
+
+---
+
+## Backlog (unscheduled)
+
+Ideas not yet slotted into a numbered phase.
+
+- [ ] **Graceful insufficient-balance handling on transfer/deposit.** When the
+  Crossmint wallet lacks funds, the REST API returns a `422 execution_reverted`
+  whose `revert.reasonData.simulationData` contains a SAC `contract_call_error`
+  like *"Balance error in SAC contract … The sender's balance is too low for the
+  requested amount."* Today this surfaces as a raw wall of JSON. Instead:
+  (a) apply the balance gate on **all** networks, not just mainnet (testnet XLM
+  transfers currently bypass it and hit this revert); and (b) parse the Crossmint
+  422 revert payload to detect the insufficient-balance case and print a concise,
+  actionable message (asset, required vs available, wallet address to fund)
+  rather than the full simulation dump.
